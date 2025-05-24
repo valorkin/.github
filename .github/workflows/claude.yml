@@ -24,12 +24,14 @@ jobs:
       contents: read
       pull-requests: read
       issues: read
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Debug Environment
+        run: env
 
       - name: Run Claude Code
         id: claude
@@ -38,19 +40,20 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
   code_review:
-    if: |
-      (github.event_name == 'pull_request')
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: read
       issues: read
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Debug Environment
+        run: env
 
       - name: Run Claude Code
         id: claude
