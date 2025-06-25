@@ -62,17 +62,18 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
           REPO: ${{ github.repository }}
         run: |
-          echo "Fetching comments from PR $PR_NUMBER in $REPO"
-          ids=$(gh api "/repos/$REPO/issues/$PR_NUMBER/comments" --jq '.[] | select(.user.login | test("claude"; "i")) | .id')
-          count=$(echo "$ids" | wc -l)
-          echo "Found $count Claude comments to delete"
+            echo "Fetching comments from PR $PR_NUMBER in $REPO"
+            ids=$(gh api "/repos/$REPO/issues/$PR_NUMBER/comments" --jq '.[] | select(.user.login | test("claude"; "i")) | .id')
+            count=$(echo "$ids" | wc -l)
+            echo "Found $count Claude comments to delete"
 
-          echo "$ids" | while read -r id; do
-              [ -n "$id" ] && {
-                  echo "Removing issues/comments/ ID: $id"
-                  gh api --method DELETE "/repos/$REPO/issues/comments/$id" --silent
-              }
-          done
+            echo "$ids" | while read -r id; do
+                [ -n "$id" ] && {
+                    echo "Removing issues/comments/ ID: $id"
+                    gh api --method DELETE "/repos/$REPO/issues/comments/$id" --silent
+                }
+            done
+          
       - name: Run Claude Code
         id: claude
         uses: valorkin/claude-code-action@feat-limit-amount-of-claude-comments
