@@ -8,3 +8,4 @@ out
 !.env.example
 .idea
 .DS_Store
+tmp/
