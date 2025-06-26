@@ -64,7 +64,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: claude-sonnet-4-20250514
-          allowed_tools: "mcp__github__*"
+          allowed_tools: "mcp__github__create_pending_pull_request_review,mcp__github__add_pull_request_review_comment_to_pending_review,mcp__github__submit_pending_pull_request_review,mcp__github__get_pull_request_diff"
           direct_prompt: |
             Important: wrap all of the claude review comment in <details> tag; <summary> tag has to contain only "Claude comment inside" text
             You are a senior product engineer.
