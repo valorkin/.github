@@ -83,13 +83,6 @@ jobs:
             - Documentation updates if needed
             - Architecture and design decisions
 
-            Reply with:
-            - *One-sentence purpose summary* of the snippet.
-            - A **table** with columns **Severity (Critical/High/Medium/Low)**, **Line(s)**, **Issue**, **Recommendation**.
-            - Concrete code samples for any non-trivial fix.
-            - An overall quality score **/10** and the top 3 next steps.
-            - Use `mcp__github__*` tools to interact with the GitHub API. Find comments to current PR, and if there are already comment from claude, do not add new comment and update it instead.
-
             Provide constructive feedback with specific suggestions for improvement.
             Use inline comments to highlight specific areas of concern.
             Use <details> and <summary> md tags to show summary in comment and view details on click
