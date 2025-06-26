@@ -66,7 +66,6 @@ jobs:
           model: claude-sonnet-4-20250514
           allowed_tools: "mcp__github__create_pending_pull_request_review,mcp__github__add_pull_request_review_comment_to_pending_review,mcp__github__submit_pending_pull_request_review,mcp__github__get_pull_request_diff"
           direct_prompt: |
-            Important: wrap all of the claude review comment in <details> tag; <summary> tag has to contain only "Claude comment inside" text
             You are a senior product engineer.
             Pay extra attention to coding standards, security practices,
             test coverage, readability, maintainability, and performance.
@@ -93,4 +92,5 @@ jobs:
             3. **Add inline comments**: Use `mcp__github__add_pull_request_review_comment_to_pending_review` for each specific piece of feedback on particular lines
             4. **Submit the review**: Use `mcp__github__submit_pending_pull_request_review` with event type "COMMENT" (not "REQUEST_CHANGES") to publish all comments as a non-blocking review
             5. **Important**: Submit as "COMMENT" type so the review doesn't block the PR.
+            6. **Important**: wrap all of the claude review comment in <details> tag; <summary> tag has to contain only "Claude comment inside" text
           
