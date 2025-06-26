@@ -66,6 +66,7 @@ jobs:
           model: claude-sonnet-4-20250514
           allowed_tools: "mcp__github__*"
           direct_prompt: |
+            Important: wrap all of the claude review comment in <details> tag; <summary> tag has to contain only "Claude comment inside" text
             You are a senior product engineer.
             Pay extra attention to coding standards, security practices,
             test coverage, readability, maintainability, and performance.
