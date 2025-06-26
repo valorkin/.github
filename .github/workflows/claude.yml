@@ -1,6 +1,8 @@
 name: Claude Code
 
 on:
+  workflow_dispatch:
+
   pull_request:
     types: [opened, reopened, synchronize]
   issue_comment:
@@ -56,43 +58,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete Claude comments
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.number }}
-          REPO: ${{ github.repository }}
-        run: |
-          echo "Fetching comments from PR $PR_NUMBER in $REPO"
-          ids=$(gh api "/repos/$REPO/issues/$PR_NUMBER/comments" --jq '.[] | select(.user.login | test("claude"; "i")) | .id')
-          ids2=$(gh api "/repos/$REPO/pulls/$PR_NUMBER/comments" --jq '.[] | select(.user.login | test("claude"; "i")) | .id')
-          count=$(echo "$ids" | wc -l)
-          echo "Found $count Claude comments to delete"
-
-          echo "$ids" | while read -r id; do
-              [ -n "$id" ] && {
-                  echo "Removing issues/comments/ ID: $id"
-                  gh api --method DELETE "/repos/$REPO/issues/comments/$id" --silent
-              }
-          done
-
-          count2=$(echo "$ids2" | wc -l)
-          echo "Found $count2 Claude comments to delete"
-
-          echo "$ids2" | while read -r id; do
-              [ -n "$id" ] && {
-                  echo "Removing pulls/comments/ ID: $id"
-                  gh api --method DELETE "/repos/$REPO/pulls/comments/$id" --silent
-              }
-          done
-          
       - name: Run Claude Code
         id: claude
-        uses: valorkin/claude-code-action@feat-limit-amount-of-claude-comments
+        uses: anthropics/claude-code-action@main
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: claude-sonnet-4-20250514
-          comments_max: 2
-          allowed_tools: "mcp__github__create_pending_pull_request_review,mcp__github__add_pull_request_review_comment_to_pending_review,mcp__github__submit_pending_pull_request_review,mcp__github__get_pull_request_diff"
+          allowed_tools: "mcp__github__*"
           direct_prompt: |
             You are a senior product engineer.
             Please provide a thorough review of this pull request.
@@ -116,6 +88,7 @@ jobs:
             - A **table** with columns **Severity (Critical/High/Medium/Low)**, **Line(s)**, **Issue**, **Recommendation**.
             - Concrete code samples for any non-trivial fix.
             - An overall quality score **/10** and the top 3 next steps.
+            - Use `mcp__github__*` tools to interact with the GitHub API. Find comments to current PR, and if there are already comment from claude, do not add new comment and update it instead.
 
             Provide constructive feedback with specific suggestions for improvement.
             Use inline comments to highlight specific areas of concern.
