@@ -65,7 +65,12 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: claude-sonnet-4-20250514
           silent: true
-          allowed_tools: "mcp__github__create_pending_pull_request_review,mcp__github__add_pull_request_review_comment_to_pending_review,mcp__github__submit_pending_pull_request_review,mcp__github__get_pull_request_diff,mcp__github__delete_pending_pull_request_review"
+          allowed_tools: "mcp__github__create_pending_pull_request_review,
+            mcp__github__add_pull_request_review_comment_to_pending_review,
+            mcp__github__submit_pending_pull_request_review,
+            mcp__github__get_pull_request_diff,
+            mcp__github__delete_pending_pull_request_review,
+            mcp__github__get_pull_request_review_comments"
           direct_prompt: |
             You are a senior product engineer.
             Pay extra attention to coding standards, security practices,
@@ -91,8 +96,9 @@ jobs:
             0. **Delete pending review**: Use `mcp__github__delete_pending_pull_request_review` to delete any existing pending review
             1. **Start a review**: Use `mcp__github__create_pending_pull_request_review` to begin a pending review
             2. **Get diff information**: Use `mcp__github__get_pull_request_diff` to understand the code changes and line numbers
-            3. **Add inline comments**: Use `mcp__github__add_pull_request_review_comment_to_pending_review` for each specific piece of feedback on particular lines. If there is already a comment from claude, do not add new comment and update it instead.
-            4. **Submit the review**: Use `mcp__github__submit_pending_pull_request_review` with event type "COMMENT" (not "REQUEST_CHANGES") to publish all comments as a non-blocking review
-            5. **Important**: Submit as "COMMENT" type so the review doesn't block the PR.
-            6. **Important**: wrap all of the claude review comment in <details> tag; <summary> tag has to contain only "Claude comment inside" text
+            3. **Get existing comments**: Use `mcp__github__get_pull_request_review_comments` to get all existing comments
+            4. **Add inline comments**: Use `mcp__github__add_pull_request_review_comment_to_pending_review` for each specific piece of feedback on particular lines. If there is already a similar comment, do not add a new comment.
+            5. **Submit the review**: Use `mcp__github__submit_pending_pull_request_review` with event type "COMMENT" (not "REQUEST_CHANGES") to publish all comments as a non-blocking review
+            6. **Important**: Submit as "COMMENT" type so the review doesn't block the PR.
+            7. **Important**: wrap all of the claude review comment in <details> tag; <summary> tag has to contain only "Claude comment inside" text
           
