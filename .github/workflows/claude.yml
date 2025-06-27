@@ -22,7 +22,7 @@ name: Claude Code
 
 # Prevent concurrent runs on the same PR to avoid conflicts
 concurrency:
-  group: claude-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+  group: claude-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
   cancel-in-progress: false
 
 on:
@@ -38,20 +38,6 @@ on:
     types: [submitted]
 
 jobs:
-  debug:
-    if: github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug Event
-        run: |
-          echo "Event: ${{ github.event_name }}"
-          echo "Comment body: ${{ github.event.comment.body }}"
-          echo "Contains @claude: ${{ contains(github.event.comment.body, '@claude') }}"
-          echo "Contains @claude please review: ${{ contains(github.event.comment.body, '@claude please review') }}"
-          echo "Is PR comment: ${{ github.event.issue.pull_request != null }}"
-          echo "Full event context:"
-          echo '${{ toJSON(github.event) }}'
-
   claude:
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude please review')) ||
