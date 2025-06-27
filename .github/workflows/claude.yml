@@ -1,8 +1,31 @@
+# Claude Code Review Workflow
+#
+# This workflow provides automated code review using Claude AI with a dual-job architecture:
+#
+# 1. **pr_review_summary**: Automatic summary review on every PR (opened/reopened/synchronized)
+#    - Provides a high-level review with severity table and quality score
+#    - Uses simplified GitHub API tools for commenting
+#    - Runs silently without verbose output
+#
+# 2. **code_review**: Detailed inline review triggered by "@claude please review" comments
+#    - Provides detailed inline comments using GitHub's review system
+#    - Uses comprehensive GitHub API tools for pull request reviews
+#    - Creates pending review, adds inline comments, then submits as non-blocking
+#
+# 3. **claude**: General purpose Claude assistant for any "@claude" mentions
+#    - Responds to comments, issues, and reviews containing "@claude"
+#    - Uses the main Claude action with standard toolset
+#
+# Race condition prevention: Jobs have mutually exclusive triggers to prevent conflicts.
+
 name: Claude Code
 
-on:
-  workflow_dispatch:
+# Prevent concurrent runs on the same PR to avoid conflicts
+concurrency:
+  group: claude-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+  cancel-in-progress: false
 
+on:
   pull_request:
     types: [opened, reopened, synchronize]
   issue_comment:
@@ -17,9 +40,9 @@ on:
 jobs:
   claude:
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude please review')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && !contains(github.event.comment.body, '@claude please review')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && !contains(github.event.review.body, '@claude please review')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
     permissions:
@@ -52,6 +75,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Authenticate GitHub CLI
@@ -65,7 +89,10 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: claude-sonnet-4-20250514
           silent: true
-          allowed_tools: 'mcp__github__get_pull_request_diff,mcp__github__create_issue_comment,mcp__github__update_issue_comment'
+          allowed_tools: |
+            mcp__github__get_pull_request_diff,
+            mcp__github__create_issue_comment,
+            mcp__github__update_issue_comment
           direct_prompt: |
             You are a senior product engineer.
             Please provide a thorough review of this pull request.
@@ -112,6 +139,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.event.issue.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Authenticate GitHub CLI
@@ -126,12 +154,13 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: claude-sonnet-4-20250514
           silent: true
-          allowed_tools: "mcp__github__create_pending_pull_request_review,
+          allowed_tools: |
+            mcp__github__create_pending_pull_request_review,
             mcp__github__add_pull_request_review_comment_to_pending_review,
             mcp__github__submit_pending_pull_request_review,
             mcp__github__get_pull_request_diff,
             mcp__github__delete_pending_pull_request_review,
-            mcp__github__get_pull_request_review_comments"
+            mcp__github__get_pull_request_review_comments
           direct_prompt: |
             You are a senior product engineer.
             Pay extra attention to coding standards, security practices,
